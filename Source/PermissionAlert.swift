@@ -133,9 +133,19 @@ internal class DisabledAlertSetting: DisabledAlert {
         if var URL = NSURL(string: UIApplicationOpenSettingsURLString) {
             if !(settingUrl?.isEmpty)! {
                 URL = NSURL(string: settingUrl!)!
-                Application.openURL(URL)
+                if #available(iOS 10.0, *) {
+                    print("Open ios=10 \(URL)")
+                    Application.openURL(URL, options: [ : ], completionHandler: { Success in
+                        
+                    })
+                } else {
+                    Application.openURL(URL)
+                    print("Open ios<10 \(URL)")
+                }
+
             }
             else {
+                print("Url null \(URL)")
                 Application.openURL(URL)
             }
         }
