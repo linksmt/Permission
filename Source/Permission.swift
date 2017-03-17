@@ -119,6 +119,9 @@ public class Permission: NSObject {
     /// Determines whether to present the permission alert.
     public var presentPermissionAlert = true
     
+    /// Determines whether to present the pre-permission alert.
+    public var urlDisabledSetting = ""
+
     /// The pre-permission alert.
     public lazy var prePermissionAlert: PermissionAlert = {
         return PrePermissionAlert(permission: self)
@@ -136,7 +139,7 @@ public class Permission: NSObject {
     
     /// The alert when the permission is disabled, and passing the setting url
     public lazy var disabledAlertSetting: PermissionAlert = {
-        return DisabledAlertSetting(permission: self)
+        return DisabledAlertSetting(permission: self, urlSetting:self.urlDisabledSetting)
     }()
     
     internal var callback: Callback?
@@ -173,7 +176,7 @@ public class Permission: NSObject {
         case .NotDetermined: requestInitialAuthorization()
         case .Denied:        presentPermissionAlert ? deniedAlert.present() : callbacks(status)
         case .Disabled:
-            if disabledAlertSetting.settingUrl != nil && !(disabledAlert.settingUrl?.isEmpty)! {
+            if !urlDisabledSetting.isEmpty {
                 presentPermissionAlert ? disabledAlertSetting.present() : callbacks(status)
             }
             else {

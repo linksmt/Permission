@@ -103,14 +103,14 @@ internal class DisabledAlert: PermissionAlert {
 }
 
 internal class DisabledAlertSetting: DisabledAlert {
-    override init(permission: Permission) {
+    init(permission: Permission,urlSetting:String) {
         super.init(permission: permission)
         
         title   = "\(permission.prettyDescription) is currently disabled"
         message = "Please enable access to \(permission.prettyDescription) in the Settings app."
         cancel   = "Cancel"
         settings = "Settings"
-        settingUrl = ""
+        settingUrl = urlSetting
     }
     
     override var controller: UIAlertController {
