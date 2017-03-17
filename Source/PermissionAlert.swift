@@ -57,9 +57,16 @@ public class PermissionAlert {
         get { return primaryActionTitle }
         set { primaryActionTitle = newValue }
     }
-    
+  
+    /// The url of the settings action.
+    public var settingUrl: String? {
+        get { return settingActionUrl }
+        set { settingActionUrl = newValue }
+    }
+
     private var cancelActionTitle: String?
     private var primaryActionTitle: String?
+    private var settingActionUrl: String?
     
     var controller: UIAlertController {
         let controller = UIAlertController(title: title, message: message, preferredStyle: .Alert)
@@ -92,6 +99,46 @@ internal class DisabledAlert: PermissionAlert {
         title   = "\(permission.prettyDescription) is currently disabled"
         message = "Please enable access to \(permission.prettyDescription) in the Settings app."
         cancel  = "OK"
+    }
+}
+
+internal class DisabledAlertSettings: PermissionAlert {
+    override init(permission: Permission) {
+        super.init(permission: permission)
+        
+        title   = "\(permission.prettyDescription) is currently disabled"
+        message = "Please enable access to \(permission.prettyDescription) in the Settings app."
+        cancel   = "Cancel"
+        settings = "Settings"
+        settingUrl = ""
+    }
+    
+    override var controller: UIAlertController {
+        let controller = super.controller
+        
+        let action = UIAlertAction(title: settings, style: .Cancel, handler: settingsHandler)
+        controller.addAction(action)
+        
+        return controller
+    }
+    
+    @objc func settingsHandler() {
+        NotificationCenter.removeObserver(self, name: UIApplicationDidBecomeActiveNotification)
+        callbacks(status)
+    }
+    
+    private func settingsHandler(action: UIAlertAction) {
+        NotificationCenter.addObserver(self, selector: .settingsHandler, name: UIApplicationDidBecomeActiveNotification)
+        
+        if var URL = NSURL(string: UIApplicationOpenSettingsURLString) {
+            if !(settingUrl?.isEmpty)! {
+                URL = NSURL(string: settingUrl!)!
+                Application.openURL(URL)
+            }
+            else {
+                Application.openURL(URL)
+            }
+        }
     }
 }
 
