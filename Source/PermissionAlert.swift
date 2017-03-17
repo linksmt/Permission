@@ -58,12 +58,6 @@ public class PermissionAlert {
         set { primaryActionTitle = newValue }
     }
   
-    /// The url of the settings action.
-    public var settingUrl: String? {
-        get { return settingActionUrl }
-        set { settingActionUrl = newValue }
-    }
-
     private var cancelActionTitle: String?
     private var primaryActionTitle: String?
     private var settingActionUrl: String?
@@ -110,7 +104,7 @@ internal class DisabledAlertSetting: DisabledAlert {
         message = "Please enable access to \(permission.prettyDescription) in the Settings app."
         cancel   = "Cancel"
         settings = "Settings"
-        settingUrl = urlSetting
+        settingActionUrl = urlSetting
     }
     
     override var controller: UIAlertController {
@@ -131,21 +125,18 @@ internal class DisabledAlertSetting: DisabledAlert {
         NotificationCenter.addObserver(self, selector: .settingsHandler, name: UIApplicationDidBecomeActiveNotification)
         
         if var URL = NSURL(string: UIApplicationOpenSettingsURLString) {
-            if !(settingUrl?.isEmpty)! {
-                URL = NSURL(string: settingUrl!)!
+            if !(settingActionUrl?.isEmpty)! {
+                URL = NSURL(string: settingActionUrl!)!
                 if #available(iOS 10.0, *) {
-                    print("Open ios=10 \(URL)")
                     Application.openURL(URL, options: [ : ], completionHandler: { Success in
                         
                     })
                 } else {
                     Application.openURL(URL)
-                    print("Open ios<10 \(URL)")
                 }
 
             }
             else {
-                print("Url null \(URL)")
                 Application.openURL(URL)
             }
         }
