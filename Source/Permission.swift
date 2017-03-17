@@ -134,6 +134,11 @@ public class Permission: NSObject {
         return DisabledAlert(permission: self)
     }()
     
+    /// The alert when the permission is disabled, and passing the setting url
+    public lazy var disabledAlertSetting: PermissionAlert = {
+        return DisabledAlertSetting(permission: self)
+    }()
+    
     internal var callback: Callback?
     
     internal var permissionSets: [PermissionSet] = []
