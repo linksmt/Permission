@@ -172,10 +172,16 @@ public class Permission: NSObject {
         case .Authorized:    callbacks(status)
         case .NotDetermined: requestInitialAuthorization()
         case .Denied:        presentPermissionAlert ? deniedAlert.present() : callbacks(status)
-        case .Disabled:      presentPermissionAlert ? disabledAlert.present() : callbacks(status)
+        case .Disabled:
+            if disabledAlert.settingUrl == nil || (disabledAlert.settingUrl?.isEmpty)! {
+                presentPermissionAlert ? disabledAlert.present() : callbacks(status)
+            }
+            else {
+                presentPermissionAlert ? disabledAlertSetting.present() : callbacks(status)
+            }
         }
     }
-    
+
     private func requestInitialAuthorization() {
         presentPrePermissionAlert ? prePermissionAlert.present() : requestAuthorization(callbacks)
     }
