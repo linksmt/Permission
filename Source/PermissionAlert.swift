@@ -102,7 +102,7 @@ internal class DisabledAlert: PermissionAlert {
     }
 }
 
-internal class DisabledAlertSetting: PermissionAlert {
+internal class DisabledAlertSetting: DisabledAlert {
     override init(permission: Permission) {
         super.init(permission: permission)
         

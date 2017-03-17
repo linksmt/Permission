@@ -49,7 +49,12 @@ public class PermissionButton: UIButton {
     public var disabledAlert: PermissionAlert {
         return permission.disabledAlert
     }
-    
+
+    /// The alert when the permission is disabled.
+    public var disabledAlertSetting: PermissionAlert {
+        return permission.disabledAlertSetting
+    }
+
     /// The textual representation of self.
     public override var description: String {
         return permission.description
