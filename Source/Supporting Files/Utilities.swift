@@ -22,13 +22,8 @@
 // SOFTWARE.
 //
 
-internal let Application = UIApplication.sharedApplication()
-internal let Defaults = NSUserDefaults.standardUserDefaults()
-internal let NotificationCenter = NSNotificationCenter.defaultCenter()
-internal let Bundle = NSBundle.mainBundle()
-
 extension UIApplication {
-    private var topViewController: UIViewController? {
+    fileprivate var topViewController: UIViewController? {
         var vc = delegate?.window??.rootViewController
         
         while let presentedVC = vc?.presentedViewController {
@@ -38,14 +33,14 @@ extension UIApplication {
         return vc
     }
     
-    internal func presentViewController(viewController: UIViewController, animated: Bool = true, completion: (() -> Void)? = nil) {
-        topViewController?.presentViewController(viewController, animated: animated, completion: completion)
+    internal func presentViewController(_ viewController: UIViewController, animated: Bool = true, completion: (() -> Void)? = nil) {
+        topViewController?.present(viewController, animated: animated, completion: completion)
     }
 }
 
-extension NSBundle {
+extension Bundle {
     var name: String {
-        return objectForInfoDictionaryKey("CFBundleName") as? String ?? ""
+        return object(forInfoDictionaryKey: "CFBundleName") as? String ?? ""
     }
 }
 
@@ -54,90 +49,75 @@ extension UIControlState: Hashable {
 }
 
 internal extension String {
-    static let nsLocationWhenInUseUsageDescription = "NSLocationWhenInUseUsageDescription"
-    static let nsLocationAlwaysUsageDescription = "NSLocationAlwaysUsageDescription"
+    static let locationWhenInUseUsageDescription = "NSLocationWhenInUseUsageDescription"
+    static let locationAlwaysUsageDescription    = "NSLocationAlwaysUsageDescription"
+    static let microphoneUsageDescription        = "NSMicrophoneUsageDescription"
+    static let speechRecognitionUsageDescription = "NSSpeechRecognitionUsageDescription"
+    static let photoLibraryUsageDescription      = "NSPhotoLibraryUsageDescription"
+    static let cameraUsageDescription            = "NSCameraUsageDescription"
+    static let mediaLibraryUsageDescription      = "NSAppleMusicUsageDescription"
+    static let siriUsageDescription              = "NSSiriUsageDescription"
+    
     
     static let requestedNotifications               = "permission.requestedNotifications"
     static let requestedLocationAlwaysWithWhenInUse = "permission.requestedLocationAlwaysWithWhenInUse"
     static let requestedMotion                      = "permission.requestedMotion"
     static let requestedBluetooth                   = "permission.requestedBluetooth"
-    
+    static let statusBluetooth                      = "permission.statusBluetooth"
+    static let stateBluetoothManagerDetermined      = "permission.stateBluetoothManagerDetermined"
 }
 
 internal extension Selector {
     static let tapped = #selector(PermissionButton.tapped(_:))
     static let highlight = #selector(PermissionButton.highlight(_:))
     static let settingsHandler = #selector(DeniedAlert.settingsHandler)
-    static let requestingNotifications = #selector(Permission.requestingNotifications)
-    static let finishedRequestingNotifications = #selector(Permission.finishedRequestingNotifications)
 }
 
-extension NSUserDefaults {
+extension UserDefaults {
     var requestedLocationAlwaysWithWhenInUse: Bool {
-        get {
-            return boolForKey(.requestedLocationAlwaysWithWhenInUse)
-        }
-        set {
-            setBool(newValue, forKey: .requestedLocationAlwaysWithWhenInUse)
-            synchronize()
-        }
+        get { return bool(forKey: .requestedLocationAlwaysWithWhenInUse) }
+        set { set(newValue, forKey: .requestedLocationAlwaysWithWhenInUse) }
     }
     
     var requestedNotifications: Bool {
-        get {
-            return boolForKey(.requestedNotifications)
-        }
-        set {
-            setBool(newValue, forKey: .requestedNotifications)
-            synchronize()
-        }
+        get { return bool(forKey: .requestedNotifications) }
+        set { set(newValue, forKey: .requestedNotifications) }
     }
     
     var requestedMotion: Bool {
-        get {
-            return boolForKey(.requestedMotion)
-        }
-        set {
-            setBool(newValue, forKey: .requestedMotion)
-            synchronize()
-        }
+        get { return bool(forKey: .requestedMotion) }
+        set { set(newValue, forKey: .requestedMotion) }
     }
     
     var requestedBluetooth: Bool {
-        get {
-            return boolForKey(.requestedBluetooth)
-        }
-        set {
-            setBool(newValue, forKey: .requestedBluetooth)
-            synchronize()
-        }
-    }
-}
-
-struct Queue {
-    static func main(block: dispatch_block_t) {
-        dispatch_async(dispatch_get_main_queue(), block)
+        get { return bool(forKey: .requestedBluetooth) }
+        set { set(newValue, forKey: .requestedBluetooth) }
     }
     
-    static func main(after seconds: Double, block: dispatch_block_t) {
-        let time = dispatch_time(DISPATCH_TIME_NOW, Int64(seconds * Double(NSEC_PER_SEC)))
-        dispatch_after(time, dispatch_get_main_queue(), block)
+    var statusBluetooth: PermissionStatus? {
+        get { return PermissionStatus(string: string(forKey: .statusBluetooth)) }
+        set { set(newValue?.rawValue, forKey: .statusBluetooth) }
+    }
+    
+    var stateBluetoothManagerDetermined: Bool {
+        get { return bool(forKey: .stateBluetoothManagerDetermined) }
+        set { set(newValue, forKey: .stateBluetoothManagerDetermined) }
     }
 }
 
-extension NSOperationQueue {
-    convenience init(_ qualityOfService: NSQualityOfService) {
+extension OperationQueue {
+    convenience init(_ qualityOfService: QualityOfService) {
         self.init()
         self.qualityOfService = qualityOfService
     }
 }
 
-internal extension NSNotificationCenter {
-    func addObserver(observer: AnyObject, selector: Selector, name: String) {
-        addObserver(observer, selector: selector, name: name, object: nil)
+internal extension NotificationCenter {
+    func addObserver(_ observer: AnyObject, selector: Selector, name: NSNotification.Name?) {
+        addObserver(observer, selector: selector, name: name!, object: nil)
     }
     
-    func removeObserver(observer: AnyObject, name: String) {
+    func removeObserver(_ observer: AnyObject, name: NSNotification.Name?) {
         removeObserver(observer, name: name, object: nil)
     }
 }

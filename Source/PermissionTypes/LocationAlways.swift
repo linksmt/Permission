@@ -22,33 +22,35 @@
 // SOFTWARE.
 //
 
+#if PERMISSION_LOCATION
 import CoreLocation
 
 internal extension Permission {
     var statusLocationAlways: PermissionStatus {
-        guard CLLocationManager.locationServicesEnabled() else { return .Disabled }
+        guard CLLocationManager.locationServicesEnabled() else { return .disabled }
         
         let status = CLLocationManager.authorizationStatus()
         
         switch status {
-        case .AuthorizedAlways: return .Authorized
-        case .AuthorizedWhenInUse:
-            return Defaults.requestedLocationAlwaysWithWhenInUse ? .Denied : .NotDetermined
-        case .NotDetermined: return .NotDetermined
-        case .Restricted, .Denied: return .Denied
+        case .authorizedAlways: return .authorized
+        case .authorizedWhenInUse:
+            return UserDefaults.standard.requestedLocationAlwaysWithWhenInUse ? .denied : .notDetermined
+        case .notDetermined: return .notDetermined
+        case .restricted, .denied: return .denied
         }
     }
     
-    func requestLocationAlways(callback: Callback) {
-        guard let _ = NSBundle.mainBundle().objectForInfoDictionaryKey(.nsLocationAlwaysUsageDescription) else {
-            print("WARNING: \(.nsLocationAlwaysUsageDescription) not found in Info.plist")
+    func requestLocationAlways(_ callback: Callback) {
+        guard let _ = Foundation.Bundle.main.object(forInfoDictionaryKey: .locationAlwaysUsageDescription) else {
+            print("WARNING: \(String.locationAlwaysUsageDescription) not found in Info.plist")
             return
         }
         
-        if CLLocationManager.authorizationStatus() == .AuthorizedWhenInUse {
-            Defaults.requestedLocationAlwaysWithWhenInUse = true
+        if CLLocationManager.authorizationStatus() == .authorizedWhenInUse {
+            UserDefaults.standard.requestedLocationAlwaysWithWhenInUse = true
         }
         
         LocationManager.request(self)
     }
 }
+#endif

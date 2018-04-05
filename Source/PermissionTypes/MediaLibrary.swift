@@ -1,5 +1,5 @@
 //
-// AddressBook.swift
+// MediaLibrary.swift
 //
 // Copyright (c) 2015-2016 Damien (http://delba.io)
 //
@@ -22,12 +22,14 @@
 // SOFTWARE.
 //
 
-#if PERMISSION_ADDRESS_BOOK
-import AddressBook
+#if PERMISSION_MEDIA_LIBRARY
+import MediaPlayer
 
 internal extension Permission {
-    var statusAddressBook: PermissionStatus {
-        let status = ABAddressBookGetAuthorizationStatus()
+    var statusMediaLibrary: PermissionStatus {
+        guard #available(iOS 9.3, *) else { fatalError() }
+        
+        let status = MPMediaLibrary.authorizationStatus()
         
         switch status {
         case .authorized:          return .authorized
@@ -36,9 +38,16 @@ internal extension Permission {
         }
     }
     
-    func requestAddressBook(_ callback: @escaping Callback) {
-        ABAddressBookRequestAccessWithCompletion(nil) { _, _ in
-            callback(self.statusAddressBook)
+    func requestMediaLibrary(_ callback: @escaping Callback) {
+        guard #available(iOS 9.3, *) else { fatalError() }
+        
+        guard let _ = Bundle.main.object(forInfoDictionaryKey: .mediaLibraryUsageDescription) else {
+            print("WARNING: \(String.mediaLibraryUsageDescription) not found in Info.plist")
+            return
+        }
+
+        MPMediaLibrary.requestAuthorization { _ in
+            callback(self.statusMediaLibrary)
         }
     }
 }

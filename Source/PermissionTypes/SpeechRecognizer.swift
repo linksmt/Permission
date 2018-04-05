@@ -1,5 +1,5 @@
 //
-// AddressBook.swift
+// SpeechRecognizer.swift
 //
 // Copyright (c) 2015-2016 Damien (http://delba.io)
 //
@@ -22,12 +22,14 @@
 // SOFTWARE.
 //
 
-#if PERMISSION_ADDRESS_BOOK
-import AddressBook
+#if PERMISSION_SPEECH_RECOGNIZER
+import Speech
 
 internal extension Permission {
-    var statusAddressBook: PermissionStatus {
-        let status = ABAddressBookGetAuthorizationStatus()
+    var statusSpeechRecognizer: PermissionStatus {
+        guard #available(iOS 10.0, *) else { fatalError() }
+        
+        let status = SFSpeechRecognizer.authorizationStatus()
         
         switch status {
         case .authorized:          return .authorized
@@ -36,9 +38,21 @@ internal extension Permission {
         }
     }
     
-    func requestAddressBook(_ callback: @escaping Callback) {
-        ABAddressBookRequestAccessWithCompletion(nil) { _, _ in
-            callback(self.statusAddressBook)
+    func requestSpeechRecognizer(_ callback: @escaping Callback) {
+        guard #available(iOS 10.0, *) else { fatalError() }
+        
+        guard let _ = Bundle.main.object(forInfoDictionaryKey: .microphoneUsageDescription) else {
+            print("WARNING: \(String.microphoneUsageDescription) not found in Info.plist")
+            return
+        }
+        
+        guard let _ = Bundle.main.object(forInfoDictionaryKey: .speechRecognitionUsageDescription) else {
+            print("WARNING: \(String.speechRecognitionUsageDescription) not found in Info.plist")
+            return
+        }
+        
+        SFSpeechRecognizer.requestAuthorization { _ in
+            callback(self.statusSpeechRecognizer)
         }
     }
 }

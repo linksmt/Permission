@@ -22,21 +22,21 @@
 > [`PermissionStatus.swift`](https://github.com/delba/Permission/blob/master/Source/PermissionStatus.swift)
 
 ```swift
-let permission: Permission = .Contacts
+let permission: Permission = .contacts
 
 print(permission.status) // PermissionStatus.NotDetermined
 
 permission.request { status in
     switch status {
-    case .Authorized:    print("authorized")
-    case .Denied:        print("denied")
-    case .Disabled:      print("disabled")
-    case .NotDetermined: print("not determined")
+    case .authorized:    print("authorized")
+    case .denied:        print("denied")
+    case .disabled:      print("disabled")
+    case .notDetermined: print("not determined")
     }
 }
 ```
 
-**Supported permissions**:
+##### Supported Permissions
 
 > [`PermissionType.swift`](https://github.com/delba/Permission/blob/master/Source/PermissionType.swift)
 > [`PermissionTypes/`](https://github.com/delba/Permission/tree/master/Source/PermissionTypes)
@@ -53,10 +53,15 @@ permission.request { status in
 - [`Reminders`](https://github.com/delba/Permission/blob/master/Source/PermissionTypes/Reminders.swift)
 - [`LocationAlways`](https://github.com/delba/Permission/blob/master/Source/PermissionTypes/LocationAlways.swift)
 - [`LocationWhenInUse`](https://github.com/delba/Permission/blob/master/Source/PermissionTypes/LocationWhenInUse.swift)
+- [`MediaLibrary`](https://github.com/delba/Permission/blob/master/Source/PermissionTypes/MediaLibrary.swift)
+- [`SpeechRecognizer`](https://github.com/delba/Permission/blob/master/Source/PermissionTypes/SpeechRecognizer.swift)
+- [`Siri`](https://github.com/delba/Permission/blob/master/Source/PermissionTypes/Siri.swift)
 
 #### PermissionAlert
 
 > [`PermissionAlert.swift`](https://github.com/delba/Permission/blob/master/Source/PermissionAlert.swift)
+
+##### Denied and disabled alerts
 
 When you first request a permission, a system alert is presented to the user.
 If you request a permission that was denied/disabled, a `PermissionAlert` will be presented.
@@ -70,6 +75,10 @@ alert.message  = nil
 alert.cancel   = "Cancel"
 alert.settings = "Settings"
 ```
+
+Set `permission.presentDeniedAlert = false` or `permission.presentDisabledAlert = false` if you don't want to present these alerts.
+
+##### Pre-permission alerts
 
 In order not to burn your only chance of displaying the system alert, you can present a **pre-permission alert**. See this [article](http://techcrunch.com/2014/04/04/the-right-way-to-ask-users-for-ios-permissions/) for more informations.
 
@@ -93,7 +102,7 @@ The system alert will only be presented if the user taps "Give Access".
 Use a `PermissionSet` to check the status of a group of `Permission` and to react when a permission is requested.
 
 ```swift
-let permissionSet = PermissionSet(.Contacts, .Camera, .Microphone, .Photos)
+let permissionSet = PermissionSet(.contacts, .camera, .microphone, .photos)
 permissionSet.delegate = self
 
 print(permissionSet.status) // PermissionStatus.NotDetermined
@@ -106,10 +115,10 @@ func permissionSet(permissionSet: PermissionSet, willRequestPermission permissio
 
 func permissionSet(permissionSet: PermissionSet, didRequestPermission permission: Permission) {
     switch permissionSet.status {
-    case .Authorized:    print("all the permissions are granted")
-    case .Denied:        print("at least one permission is denied")
-    case .Disabled:      print("at least one permission is disabled")
-    case .NotDetermined: print("at least one permission is not determined")
+    case .authorized:    print("all the permissions are granted")
+    case .denied:        print("at least one permission is denied")
+    case .disabled:      print("at least one permission is disabled")
+    case .notDetermined: print("at least one permission is not determined")
     }
 }
 ```
@@ -121,17 +130,17 @@ func permissionSet(permissionSet: PermissionSet, didRequestPermission permission
 A `PermissionButton` requests the permission when tapped and updates itself when its underlying permission status changes.
 
 ```swift
-let button = PermissionButton(.Photos)
+let button = PermissionButton(.photos)
 ```
 
 `PermissionButton` is a subclass of `UIButton`. All the getters and setters of `UIButton` have their equivalent in `PermissionButton`.
 
 ```swift
 button.setTitles([
-    .Authorized:    "Authorized",
-    .Denied:        "Denied",
-    .Disabled:      "Disabled",
-    .NotDetermined: "Not determined"
+    .authorized:    "Authorized",
+    .denied:        "Denied",
+    .disabled:      "Disabled",
+    .notDetermined: "Not determined"
 ])
 
 // button.setAttributedTitles
@@ -156,21 +165,21 @@ class PermissionsViewController: UIViewController, PermissionSetDelegate {
 
         let label = UILabel()
 
-        let contacts   = PermissionButton(.Contacts)
-        let camera     = PermissionButton(.Camera)
-        let microphone = PermissionButton(.Microphone)
-        let photos     = PermissionButton(.Photos)
+        let contacts   = PermissionButton(.contacts)
+        let camera     = PermissionButton(.camera)
+        let microphone = PermissionButton(.microphone)
+        let photos     = PermissionButton(.photos)
 
         contacts.setTitles([
-            .NotDetermined: "Contacts - NotDetermined",
-            .Authorized:    "Contacts - Authorized",
-            .Denied:        "Contacts - Denied"
+            .notDetermined: "Contacts - NotDetermined"
+            .authorized:    "Contacts - Authorized",
+            .denied:        "Contacts - Denied"
         ])
 
         contacts.setTitleColors([
-            .NotDetermined: .blackColor(),
-            .Authorized:    .greenColor(),
-            .Denied:        .redColor()
+            .notDetermined: .black,
+            .authorized:    .green,
+            .denied:        .red
         ])
 
         // ...
@@ -213,7 +222,41 @@ To integrate Permission into your Xcode project using Carthage, specify it in yo
 github "delba/Permission"
 ```
 
-### CocoaPods
+##### Configuration
+
+Due to Apple's new policy regarding permission access, binaries may be rejected due to a perceived attempt
+to access privacy-sensitive data without a usage key, and then further rejected for not actually requesting
+permissions.
+
+As a workaround, you can provide custom build flags _before_ building the dynamic framework to only compile
+with permissions you request. This is done by adding a configuration file named `PermissionConfiguration.xcconfig`
+to the root of your project. For convenience, you can use
+`PermissionConfiguration.xcconfig` in the `Permission/` repo directory. Just comment out the permissions
+you want to use, and compile the framework.
+
+To compile with only notifications and photos permissions:
+```
+PERMISSION_ADDRESS_BOOK      = // PERMISSION_ADDRESS_BOOK
+PERMISSION_BLUETOOTH         = // PERMISSION_BLUETOOTH
+PERMISSION_CAMERA            = PERMISSION_CAMERA
+PERMISSION_CONTACTS          = // PERMISSION_CONTACTS
+PERMISSION_EVENTS            = // PERMISSION_EVENTS
+PERMISSION_LOCATION          = // PERMISSION_LOCATION
+PERMISSION_MICROPHONE        = // PERMISSION_MICROPHONE
+PERMISSION_MOTION            = // PERMISSION_MOTION
+PERMISSION_NOTIFICATIONS     = PERMISSION_NOTIFICATIONS
+PERMISSION_PHOTOS            = // PERMISSION_PHOTOS
+PERMISSION_REMINDERS         = // PERMISSION_REMINDERS
+PERMISSION_SPEECH_RECOGNIZER = // PERMISSION_SPEECH_RECOGNIZER
+PERMISSION_MEDIA_LIBRARY     = // PERMISSION_MEDIA_LIBRARY
+
+// Do not modify this line. Instead, remove comments above as needed to enable the categories your app uses.
+PERMISSION_FLAGS= $(PERMISSION_ADDRESS_BOOK) $(PERMISSION_BLUETOOTH) $(PERMISSION_CAMERA) $(PERMISSION_CONTACTS) $(PERMISSION_EVENTS) $(PERMISSION_LOCATION) $(PERMISSION_MICROPHONE) $(PERMISSION_MOTION) $(PERMISSION_NOTIFICATIONS) $(PERMISSION_PHOTOS) $(PERMISSION_REMINDERS) $(PERMISSION_SPEECH_RECOGNIZER) $(PERMISSION_MEDIA_LIBRARY)
+
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) $(PERMISSION_FLAGS)
+```
+
+### Cocoapods
 
 [CocoaPods](http://cocoapods.org) is a dependency manager for Cocoa projects.
 
@@ -223,13 +266,16 @@ You can install it with the following command:
 $ gem install cocoapods
 ```
 
-To integrate Permission into your Xcode project using CocoaPods, specify it in your `Podfile`:
+To integrate Permission into your Xcode project using CocoaPods, specify it in your `Podfile`. Due to Apple's new policy regarding permission access you need to specifically define what kind of permissions you want to access using subspecs. For example if you want to access the Camera and the Notifications you define the following:
 
 ```ruby
 use_frameworks!
 
-pod 'Permission'
+pod 'Permission/Camera'
+pod 'Permission/Notifications'
 ```
+
+Please see `Permission.podspec` for more information about which subspecs are available.
 
 ## License
 

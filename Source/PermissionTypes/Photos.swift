@@ -22,6 +22,7 @@
 // SOFTWARE.
 //
 
+#if PERMISSION_PHOTOS
 import Photos
 
 internal extension Permission {
@@ -29,15 +30,21 @@ internal extension Permission {
         let status = PHPhotoLibrary.authorizationStatus()
         
         switch status {
-        case .Authorized:          return .Authorized
-        case .Denied, .Restricted: return .Denied
-        case .NotDetermined:       return .NotDetermined
+        case .authorized:          return .authorized
+        case .denied, .restricted: return .denied
+        case .notDetermined:       return .notDetermined
         }
     }
     
-    func requestPhotos(callback: Callback) {
+    func requestPhotos(_ callback: @escaping Callback) {
+        guard let _ = Bundle.main.object(forInfoDictionaryKey: .photoLibraryUsageDescription) else {
+            print("WARNING: \(String.photoLibraryUsageDescription) not found in Info.plist")
+            return
+        }
+
         PHPhotoLibrary.requestAuthorization { _ in
             callback(self.statusPhotos)
         }
     }
 }
+#endif

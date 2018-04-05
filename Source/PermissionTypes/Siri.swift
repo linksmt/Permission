@@ -1,7 +1,7 @@
 //
-// AddressBook.swift
+// Siri.swift
 //
-// Copyright (c) 2015-2016 Damien (http://delba.io)
+// Copyright (c) 2015-2017 Damien (http://delba.io)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,24 +22,28 @@
 // SOFTWARE.
 //
 
-#if PERMISSION_ADDRESS_BOOK
-import AddressBook
-
+#if PERMISSION_SIRI
+import Intents
+    
 internal extension Permission {
-    var statusAddressBook: PermissionStatus {
-        let status = ABAddressBookGetAuthorizationStatus()
-        
+    var statusSiri: PermissionStatus {
+        guard #available(iOS 10.0, *) else { fatalError() }
+        let status = INPreferences.siriAuthorizationStatus()
         switch status {
         case .authorized:          return .authorized
         case .restricted, .denied: return .denied
         case .notDetermined:       return .notDetermined
         }
     }
-    
-    func requestAddressBook(_ callback: @escaping Callback) {
-        ABAddressBookRequestAccessWithCompletion(nil) { _, _ in
-            callback(self.statusAddressBook)
+    func requestSiri(_ callback: @escaping Callback) {
+        guard #available(iOS 10.0, *) else { fatalError() }
+        guard let _ = Bundle.main.object(forInfoDictionaryKey: .siriUsageDescription) else {
+            print("WARNING: \(String.siriUsageDescription) not found in Info.plist")
+            return
         }
+        INPreferences.requestSiriAuthorization({ (status) in
+            callback(self.statusSiri)
+        })
     }
 }
 #endif
