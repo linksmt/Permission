@@ -82,7 +82,7 @@ open class PermissionAlert : NSObject {
     var controller: UIAlertController {
         let controller = UIAlertController(title: title, message: message, preferredStyle: .alert)
         
-        let action = UIAlertAction(title: cancelActionTitle, style: .cancel, handler: cancelHandler)
+        let action = UIAlertAction(title: cancelActionTitle, style: .default, handler: cancelHandler)
         controller.addAction(action)
         
         return controller
