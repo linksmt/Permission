@@ -21,6 +21,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 //
+import UIKit
 
 open class PermissionAlert : NSObject {
     /// The permission.
@@ -94,6 +95,7 @@ open class PermissionAlert : NSObject {
     
     internal func present() {
         DispatchQueue.main.async {
+            
             UIApplication.shared.presentViewController(self.controller)
         }
     }
@@ -134,15 +136,16 @@ internal class DisabledAlertSetting: DisabledAlert {
     }
     
     @objc func settingsHandler() {
-        NotificationCenter.default.removeObserver(self, name: .UIApplicationDidBecomeActive)
+        
+        NotificationCenter.default.removeObserver(self, name: UIApplication.didBecomeActiveNotification)
         
         callbacks(status)
     }
     
     private func settingsHandler(action: UIAlertAction) {
-        NotificationCenter.default.addObserver(self, selector: .settingsHandler, name: .UIApplicationDidBecomeActive)
+        NotificationCenter.default.addObserver(self, selector: .settingsHandler, name: UIApplication.didBecomeActiveNotification, object:nil)
         
-        if var url = URL(string: UIApplicationOpenSettingsURLString) {
+        if var url = URL(string: UIApplication.openSettingsURLString) {
             if !(settingActionUrl?.isEmpty)! {
                 url = URL(string: settingActionUrl!)!
                 if #available(iOS 10.0, *) {
@@ -186,15 +189,19 @@ internal class DeniedAlert: PermissionAlert {
         settings = "Settings"
     }
     
-    @objc func settingsHandler() {
-        NotificationCenter.default.removeObserver(self, name: .UIApplicationDidBecomeActive)
+    @objc func settingsHandlerBase() {
+        
+       NotificationCenter.default.removeObserver(self, name: UIApplication.didBecomeActiveNotification)
         callbacks(status)
     }
     
     private func settingsHandler(_ action: UIAlertAction) {
-        NotificationCenter.default.addObserver(self, selector: .settingsHandler, name: .UIApplicationDidBecomeActive)
         
-        if let URL = URL(string: UIApplicationOpenSettingsURLString) {
+        NotificationCenter.default.addObserver(self, selector: .settingsHandler, name: UIApplication.didBecomeActiveNotification, object: nil)
+        
+     //   NotificationCenter.default.addObserver(self, selector: .settingsHandler, name: UIApplication.didBecomeActiveNotification)
+        
+        if let URL = URL(string: UIApplication.openSettingsURLString) {
             UIApplication.shared.openURL(URL)
         }
     }

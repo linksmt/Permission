@@ -44,7 +44,7 @@ extension Bundle {
     }
 }
 
-extension UIControlState: Hashable {
+extension UIControl.State: Hashable {
     public var hashValue: Int { return Int(rawValue) }
 }
 
@@ -70,7 +70,7 @@ internal extension String {
 internal extension Selector {
     static let tapped = #selector(PermissionButton.tapped(_:))
     static let highlight = #selector(PermissionButton.highlight(_:))
-    static let settingsHandler = #selector(DeniedAlert.settingsHandler)
+    static let settingsHandler = #selector(DeniedAlert.settingsHandlerBase)
 }
 
 extension UserDefaults {
